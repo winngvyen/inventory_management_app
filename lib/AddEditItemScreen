@@ -30,7 +30,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
         'quantity': quantity,
       });
     } else {
-      // Update existing item
+      // Update existing item using firebasefirestone
       FirebaseFirestore.instance.collection('inventory').doc(widget.doc!.id).update({
         'name': name,
         'quantity': quantity,
