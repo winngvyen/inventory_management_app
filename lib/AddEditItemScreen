@@ -1,0 +1,72 @@
+class AddEditItemScreen extends StatefulWidget {
+  final DocumentSnapshot? doc;
+  AddEditItemScreen({this.doc});
+
+  @override
+  _AddEditItemScreenState createState() => _AddEditItemScreenState();
+}
+
+class _AddEditItemScreenState extends State<AddEditItemScreen> {
+  TextEditingController nameController = TextEditingController();
+  TextEditingController quantityController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.doc != null) {
+      nameController.text = widget.doc!['name'];
+      quantityController.text = widget.doc!['quantity'].toString();
+    }
+  }
+
+  void _saveItem() {
+    String name = nameController.text;
+    int quantity = int.tryParse(quantityController.text) ?? 0;
+
+    if (widget.doc == null) {
+      // Add new item
+      FirebaseFirestore.instance.collection('inventory').add({
+        'name': name,
+        'quantity': quantity,
+      });
+    } else {
+      // Update existing item
+      FirebaseFirestore.instance.collection('inventory').doc(widget.doc!.id).update({
+        'name': name,
+        'quantity': quantity,
+      });
+    }
+
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.doc == null ? 'Add Item' : 'Edit Item'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(labelText: 'Item Name'),
+            ),
+            TextField(
+              controller: quantityController,
+              decoration: InputDecoration(labelText: 'Quantity'),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _saveItem,
+              child: Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

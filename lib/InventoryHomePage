@@ -1,0 +1,60 @@
+class InventoryHomePage extends StatefulWidget {
+  @override
+  _InventoryHomePageState createState() => _InventoryHomePageState();
+}
+
+class _InventoryHomePageState extends State<InventoryHomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Inventory Management'),
+      ),
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance.collection('inventory').snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          }
+          return ListView(
+            children: snapshot.data!.docs.map((doc) {
+              return ListTile(
+                title: Text(doc['name']),
+                subtitle: Text('Quantity: ${doc['quantity']}'),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _deleteItem(doc.id),
+                ),
+                onTap: () => _updateItem(doc),
+              );
+            }).toList(),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addItem,
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+
+  void _addItem() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AddEditItemScreen()),
+    );
+  }
+
+  void _deleteItem(String id) {
+    FirebaseFirestore.instance.collection('inventory').doc(id).delete();
+  }
+
+  void _updateItem(DocumentSnapshot doc) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddEditItemScreen(doc: doc),
+      ),
+    );
+  }
+}
